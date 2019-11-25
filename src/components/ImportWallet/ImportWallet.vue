@@ -85,7 +85,7 @@ export default {
           myWallet.wallet.fromEncryptedJson(keystoreJson, password, (err, wallet) => {
             if (err) {
               this.disabled = false
-              alert(err.message())
+              alert(err.message)
               return
             }
             this.disabled = false

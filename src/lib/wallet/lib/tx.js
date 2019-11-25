@@ -2,7 +2,7 @@ const EthTx = require('ethereumjs-tx').Transaction
 const tx = {}
 
 tx.valueTx = function (txParams) {
-  return new EthTx(txParams, { chain: 'mainnet', hardfork: 'petersburg' })
+  return new EthTx(txParams, {chain: 'ropsten'})
 }
 
 tx.contractTx = function (data, txParams) {

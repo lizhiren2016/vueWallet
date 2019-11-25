@@ -12,8 +12,9 @@
         <el-input type="text" :placeholder="form.nonce" disabled />
       </el-form-item>
       <el-form-item>
-        <el-button type="success" v-on:click="init()">刷 新</el-button>
-        <el-button type="danger" v-on:click="isShow(true)">交 易</el-button>
+        <el-button type="success" v-on:click="refreshData()">刷 新</el-button>
+        <el-button type="danger" v-on:click="isShow(true)">发送普通交易</el-button>
+        <el-button type="danger" v-on:click="isShow(true)">发送Token交易</el-button>
         <el-button v-on:click="jump('/')">退 出</el-button>
       </el-form-item>
     </el-form>
@@ -86,10 +87,10 @@ export default {
   created: function () {
     this.activeWallet = myWallet.wallet.connect(this.wallet)
     this.web3 = myWallet.web3.constructor()
-    this.init()
+    this.refreshData()
   },
   methods: {
-    init () {
+    refreshData () {
       this.getBalance()
       this.getTransactionCount()
     },
@@ -120,6 +121,7 @@ export default {
         if (valid) {
           const txParams = {
             to: to,
+            chainId: 3,
             value: utils.toHex(utils.toWei(value, 'ether')),
             nonce: utils.toHex(nonce),
             gasPrice: utils.toHex(utils.toWei(gasPrice, 'gwei')),
@@ -143,7 +145,8 @@ export default {
           console.warn(err.message)
           return
         }
-        console.log(txId)
+        this.isShow(false)
+        this.refreshData()
         this.confirmedTransaction(txId, function (err, tx) {
           if (err) {
             console.warn(err.message)
@@ -154,12 +157,11 @@ export default {
       }.bind(this))
     },
     // 确认交易
-    confirmedTransaction (txId, callback) {
+    async confirmedTransaction (txId, callback) {
       const {eth} = this.web3
       let confirmed = false
       let limit = 5
-      let blockNumber = eth.blockNumber
-
+      let blockNumber = await this.getBlockNumber()
       return whilst(
         function () {
           return confirmed === false
@@ -194,6 +196,15 @@ export default {
           }
         }
       )
+    },
+    // 获取网络区块数
+    getBlockNumber () {
+      const {eth} = this.web3
+      return eth.getBlockNumber().then(block => {
+        return block
+      }).catch(err => {
+        console.warn(err.message)
+      })
     },
     isShow (value) {
       this.transactionModel = value
