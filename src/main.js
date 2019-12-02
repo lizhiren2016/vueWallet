@@ -7,9 +7,11 @@ import ElementUI from 'element-ui'
 import VueRouter from 'vue-router'
 import 'element-ui/lib/theme-chalk/index.css'
 import Axios from 'axios'
+import Localstorage from './lib/localstorage/index'
 
 Vue.config.productionTip = false
 Vue.prototype.$axios = Axios
+Vue.prototype.$localstorage = new Localstorage()
 
 // 安装路由
 Vue.use(VueRouter)

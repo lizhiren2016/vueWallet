@@ -1,11 +1,14 @@
 <template>
   <div>
-    <el-form v-show="personalModel" label-width="80px" class="box">
-      <h3 class="title">钱包详情</h3>
+    <el-form v-show="!transactionModel" label-width="80px" class="box">
+      <h3 class="title">账户列表</h3>
       <el-form-item label="账号：">
         <el-input type="text" :placeholder="wallet.address" disabled />
       </el-form-item>
-      <el-form-item label="余额：">
+      <el-form-item label="ETH余额：">
+        <el-input type="text" :placeholder="balance" disabled />
+      </el-form-item>
+      <el-form-item label="ETH余额：">
         <el-input type="text" :placeholder="balance" disabled />
       </el-form-item>
       <el-form-item label="Nonce：">
@@ -13,14 +16,13 @@
       </el-form-item>
       <el-form-item>
         <el-button type="success" v-on:click="refreshData()">刷 新</el-button>
-        <el-button type="danger" v-on:click="showModel('other', true)">发送普通交易</el-button>
-        <el-button type="danger" v-on:click="showModel('token', true)">发送Token交易</el-button>
+        <el-button type="danger" v-on:click="isShow(true)">发送普通交易</el-button>
+        <el-button type="danger" v-on:click="isShow(true)">发送Token交易</el-button>
         <el-button v-on:click="jump('/')">退 出</el-button>
       </el-form-item>
     </el-form>
-    <!--  ETH交易模态窗  -->
-    <el-form v-show="ethTransactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
-      <h3 class="title">发送ETH交易</h3>
+    <el-form v-show="transactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
+      <h3 class="title">发送交易</h3>
       <el-form-item label="Nonce：" prop="nonce">
         <el-input type="text" placeholder="交易序列号" v-model="form.nonce" />
       </el-form-item>
@@ -38,13 +40,11 @@
       </el-form-item>
       <el-form-item>
         <el-button type="danger" v-on:click="signTransaction('form')">发 送</el-button>
-        <el-button v-on:click="showModel('other', false)">返 回</el-button>
+        <el-button v-on:click="isShow(false)">返 回</el-button>
       </el-form-item>
     </el-form>
-
-    <!--  TOKEN交易模态窗  -->
     <el-form v-show="tokenTransactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
-      <h3 class="title">发送ETH交易</h3>
+      <h3 class="title">发送交易</h3>
       <el-form-item label="Nonce：" prop="nonce">
         <el-input type="text" placeholder="交易序列号" v-model="form.nonce" />
       </el-form-item>
@@ -62,7 +62,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="danger" v-on:click="signTransaction('form')">发 送</el-button>
-        <el-button v-on:click="showModel('other', false)">返 回</el-button>
+        <el-button v-on:click="isShow(false)">返 回</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -76,8 +76,7 @@ export default {
   name: 'Personal',
   data () {
     return {
-      personalModel: true,
-      ethTransactionModel: false,
+      transactionModel: false,
       tokenTransactionModel: false,
       balance: 0,
       wallet: this.$route.params.wallet,
@@ -120,35 +119,21 @@ export default {
     refreshData () {
       this.getBalance()
       this.getTransactionCount()
-      this.getContractBalance()
     },
     // 获取账户余额
     getBalance () {
       myWallet.wallet.getBalance(this.activeWallet, (err, balance) => {
         if (err) {
-          alert(err.message)
+          alert(err.message())
           return
         }
         this.balance = balance
       })
     },
-    async getContractBalance () {
-      const contract = myWallet.wallet.newContract('0x4dd42d34242be4d5009ccae04f5617e554a2d364')
-      const decimals = await contract.decimals()
-      console.log(decimals)
-      myWallet.wallet.getContractBalance(contract, this.activeWallet.address, (err, balance) => {
-        if (err) {
-          alert(err.message)
-          return
-        }
-        console.log(this.activeWallet.address)
-        console.log(balance)
-      })
-    },
     getTransactionCount () {
       myWallet.wallet.getTransactionCount(this.activeWallet, (err, transactionCount) => {
         if (err) {
-          alert(err.message)
+          alert(err.message())
           return
         }
         this.form.nonce = transactionCount
@@ -247,13 +232,8 @@ export default {
         console.warn(err.message)
       })
     },
-    // 交易模态窗
-    showModel (type, state) {
-      if (type === 'token') {
-        this.tokenTransactionModel = state
-      } else {
-        this.ethTransactionModel = state
-      }
+    isShow (value) {
+      this.transactionModel = value
     },
     jump (path) {
       this.$router.push(path)

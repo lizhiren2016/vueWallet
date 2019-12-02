@@ -2,10 +2,37 @@
 const bip39 = require('bip39')
 const { ethers } = require('ethers')
 const HDKey = require('hdkey')
+const BigNumber = require('bignumber.js')
 const util = require('./util')
+const abi = require('./abi')
 
 const defaultHDPath = 'm/44\'/60\'/0\'0' // BIP44路径定义规范
 const wallet = {}
+
+/**
+ * 初始化合约
+ * @param address {String} 合约地址
+ * @param network {string} 网络地址
+ * @returns {Contract}
+ */
+wallet.newContract = function (address, network) {
+  const defaultProvider = ethers.getDefaultProvider(network || 'ropsten')
+  return new ethers.Contract(address, abi, defaultProvider)
+}
+
+/**
+ * 获取合约账户余额
+ * @param contract {Object} 合约对象
+ * @param address {String} 查询的地址
+ * @param callback
+ */
+wallet.getContractBalance = function (contract, address, callback) {
+  contract.balanceOf(address).then(function (balance) {
+    callback(null, new BigNumber(balance).toNumber())
+  }).catch(err => {
+    callback(err, null)
+  })
+}
 
 wallet.generate = function (randomSeed, hdPath, callback) {
   try {

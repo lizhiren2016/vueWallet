@@ -88,7 +88,7 @@ export default {
               alert(err.message)
               return
             }
-            this.disabled = false
+            this.$localstorage.set('wallet', JSON.stringify(wallet))
             this.jump('personal', wallet)
           })
         }

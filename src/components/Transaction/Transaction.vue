@@ -1,49 +1,6 @@
 <template>
   <div>
-    <el-form v-show="personalModel" label-width="80px" class="box">
-      <h3 class="title">钱包详情</h3>
-      <el-form-item label="账号：">
-        <el-input type="text" :placeholder="wallet.address" disabled />
-      </el-form-item>
-      <el-form-item label="余额：">
-        <el-input type="text" :placeholder="balance" disabled />
-      </el-form-item>
-      <el-form-item label="Nonce：">
-        <el-input type="text" :placeholder="form.nonce" disabled />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="success" v-on:click="refreshData()">刷 新</el-button>
-        <el-button type="danger" v-on:click="showModel('other', true)">发送普通交易</el-button>
-        <el-button type="danger" v-on:click="showModel('token', true)">发送Token交易</el-button>
-        <el-button v-on:click="jump('/')">退 出</el-button>
-      </el-form-item>
-    </el-form>
-    <!--  ETH交易模态窗  -->
     <el-form v-show="ethTransactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
-      <h3 class="title">发送ETH交易</h3>
-      <el-form-item label="Nonce：" prop="nonce">
-        <el-input type="text" placeholder="交易序列号" v-model="form.nonce" />
-      </el-form-item>
-      <el-form-item label="GasPrice：" prop="gasPrice">
-        <el-input type="text" placeholder="gas的费用" v-model="form.gasPrice" />
-      </el-form-item>
-      <el-form-item label="GasLimit：" prop="gasLimit">
-        <el-input type="text" placeholder="消耗gas的数量" v-model="form.gasLimit" />
-      </el-form-item>
-      <el-form-item label="To：" prop="to">
-        <el-input type="text" placeholder="转账地址" v-model="form.to" />
-      </el-form-item>
-      <el-form-item label="Value：" prop="value">
-        <el-input type="text" placeholder="转账金额" v-model="form.value" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="danger" v-on:click="signTransaction('form')">发 送</el-button>
-        <el-button v-on:click="showModel('other', false)">返 回</el-button>
-      </el-form-item>
-    </el-form>
-
-    <!--  TOKEN交易模态窗  -->
-    <el-form v-show="tokenTransactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
       <h3 class="title">发送ETH交易</h3>
       <el-form-item label="Nonce：" prop="nonce">
         <el-input type="text" placeholder="交易序列号" v-model="form.nonce" />
@@ -73,7 +30,7 @@ import whilst from 'async/whilst'
 import myWallet from '@/lib/wallet/index'
 
 export default {
-  name: 'Personal',
+  name: 'Transaction',
   data () {
     return {
       personalModel: true,

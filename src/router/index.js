@@ -4,6 +4,7 @@ import Main from '@/components/Main'
 import Generate from '@/components/Generate/Generate'
 import ImportWallet from '@/components/ImportWallet/ImportWallet'
 import Personal from '@/components/Personal/Personal'
+import Transaction from '@/components/Transaction/Transaction'
 
 Vue.use(Router)
 
@@ -27,10 +28,16 @@ export default new Router({
       component: ImportWallet
     },
     {
-      // 导入wallet账户
+      // 账户中心
       path: '/personal',
       name: 'personal',
       component: Personal
+    },
+    {
+      // 普通交易
+      path: '/Transaction',
+      name: 'transaction',
+      component: Transaction
     }
   ]
 })
