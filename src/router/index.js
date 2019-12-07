@@ -5,6 +5,7 @@ import Generate from '@/components/Generate/Generate'
 import ImportWallet from '@/components/ImportWallet/ImportWallet'
 import Personal from '@/components/Personal/Personal'
 import Transaction from '@/components/Transaction/Transaction'
+import TokenTransaction from '@/components/Transaction/TokenTransaction'
 
 Vue.use(Router)
 
@@ -23,7 +24,7 @@ export default new Router({
     },
     {
       // 导入wallet账户
-      path: '/import-wallet',
+      path: '/import_wallet',
       name: 'importWallet',
       component: ImportWallet
     },
@@ -35,9 +36,15 @@ export default new Router({
     },
     {
       // 普通交易
-      path: '/Transaction',
+      path: '/transaction',
       name: 'transaction',
       component: Transaction
+    },
+    {
+      // token交易
+      path: '/token_transaction',
+      name: 'tokenTransaction',
+      component: TokenTransaction
     }
   ]
 })

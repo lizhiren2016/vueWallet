@@ -88,8 +88,8 @@ export default {
               alert(err.message)
               return
             }
-            this.$localstorage.set('wallet', JSON.stringify(wallet))
-            this.jump('personal', wallet)
+            this.$localstorage.set('wallet', JSON.stringify(wallet.wallet))
+            this.jump('personal', wallet.wallet)
           })
         }
       })

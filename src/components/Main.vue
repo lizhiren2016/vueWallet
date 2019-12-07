@@ -6,7 +6,7 @@
         <el-button type="primary" v-on:click="jump('generate')">创建新的账户</el-button>
       </el-col>
       <el-col :span="24">
-        <el-button type="warning" v-on:click="jump('import-wallet')">导入已有账户</el-button>
+        <el-button type="warning" v-on:click="jump('import_wallet')">导入已有账户</el-button>
       </el-col>
     </el-row>
   </div>
@@ -14,7 +14,7 @@
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'Main',
   methods: {
     jump (path) {
       this.$router.push(path)

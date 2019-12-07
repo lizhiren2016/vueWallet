@@ -1,7 +1,7 @@
 <template>
   <div>
-    <el-form v-show="ethTransactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
-      <h3 class="title">发送ETH交易</h3>
+    <el-form ref="form" :model="form" :rules="rules" label-width="80px" class="box">
+      <h3 class="title">发送交易</h3>
       <el-form-item label="Nonce：" prop="nonce">
         <el-input type="text" placeholder="交易序列号" v-model="form.nonce" />
       </el-form-item>
@@ -19,25 +19,20 @@
       </el-form-item>
       <el-form-item>
         <el-button type="danger" v-on:click="signTransaction('form')">发 送</el-button>
-        <el-button v-on:click="showModel('other', false)">返 回</el-button>
+        <el-button v-on:click="jump('personal',wallet)">返 回</el-button>
       </el-form-item>
     </el-form>
   </div>
 </template>
 
 <script>
-import whilst from 'async/whilst'
 import myWallet from '@/lib/wallet/index'
 
 export default {
   name: 'Transaction',
   data () {
     return {
-      personalModel: true,
-      ethTransactionModel: false,
-      tokenTransactionModel: false,
-      balance: 0,
-      wallet: this.$route.params.wallet,
+      wallet: this.$route.params,
       activeWallet: {},
       web3: {},
       signedTransaction: '',
@@ -71,37 +66,9 @@ export default {
   created: function () {
     this.activeWallet = myWallet.wallet.connect(this.wallet)
     this.web3 = myWallet.web3.constructor()
-    this.refreshData()
+    this.getTransactionCount()
   },
   methods: {
-    refreshData () {
-      this.getBalance()
-      this.getTransactionCount()
-      this.getContractBalance()
-    },
-    // 获取账户余额
-    getBalance () {
-      myWallet.wallet.getBalance(this.activeWallet, (err, balance) => {
-        if (err) {
-          alert(err.message)
-          return
-        }
-        this.balance = balance
-      })
-    },
-    async getContractBalance () {
-      const contract = myWallet.wallet.newContract('0x4dd42d34242be4d5009ccae04f5617e554a2d364')
-      const decimals = await contract.decimals()
-      console.log(decimals)
-      myWallet.wallet.getContractBalance(contract, this.activeWallet.address, (err, balance) => {
-        if (err) {
-          alert(err.message)
-          return
-        }
-        console.log(this.activeWallet.address)
-        console.log(balance)
-      })
-    },
     getTransactionCount () {
       myWallet.wallet.getTransactionCount(this.activeWallet, (err, transactionCount) => {
         if (err) {
@@ -143,77 +110,11 @@ export default {
           console.warn(err.message)
           return
         }
-        this.isShow(false)
-        this.refreshData()
-        this.confirmedTransaction(txId, function (err, tx) {
-          if (err) {
-            console.warn(err.message)
-            return
-          }
-          console.log('Transaction confirmed', tx)
-        })
+        this.jump('personal', this.wallet)
       }.bind(this))
     },
-    // 确认交易
-    async confirmedTransaction (txId, callback) {
-      const {eth} = this.web3
-      let confirmed = false
-      let limit = 5
-      let blockNumber = await this.getBlockNumber()
-      return whilst(
-        function () {
-          return confirmed === false
-        },
-        function (callback) {
-          eth.getTransaction(txId, function (err, tx) {
-            if (err) {
-              window.setTimeout(function () {
-                callback(err, null)
-              }, 1000)
-            }
-            if (tx && tx.blockNumber !== null) {
-              if (blockNumber >= (tx.blockNumber + limit)) {
-                confirmed = true
-                window.setTimeout(function () {
-                  callback(null, tx)
-                }, 1000)
-                return
-              }
-            }
-            window.setTimeout(function () {
-              callback(null, null)
-            }, 1000)
-          })
-        },
-        function (err, tx) {
-          if (err) {
-            return callback(err, null)
-          }
-          if (tx && confirmed) {
-            return callback(null, tx)
-          }
-        }
-      )
-    },
-    // 获取网络区块数
-    getBlockNumber () {
-      const {eth} = this.web3
-      return eth.getBlockNumber().then(block => {
-        return block
-      }).catch(err => {
-        console.warn(err.message)
-      })
-    },
-    // 交易模态窗
-    showModel (type, state) {
-      if (type === 'token') {
-        this.tokenTransactionModel = state
-      } else {
-        this.ethTransactionModel = state
-      }
-    },
-    jump (path) {
-      this.$router.push(path)
+    jump (path, params) {
+      this.$router.push({name: path, params})
     }
   }
 }

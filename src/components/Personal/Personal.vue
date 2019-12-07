@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form v-show="personalModel" label-width="80px" class="box">
+    <el-form label-width="80px" class="box">
       <h3 class="title">钱包详情</h3>
       <el-form-item label="账号：">
         <el-input type="text" :placeholder="wallet.address" disabled />
@@ -13,56 +13,9 @@
       </el-form-item>
       <el-form-item>
         <el-button type="success" v-on:click="refreshData()">刷 新</el-button>
-        <el-button type="danger" v-on:click="showModel('other', true)">发送普通交易</el-button>
-        <el-button type="danger" v-on:click="showModel('token', true)">发送Token交易</el-button>
-        <el-button v-on:click="jump('/')">退 出</el-button>
-      </el-form-item>
-    </el-form>
-    <!--  ETH交易模态窗  -->
-    <el-form v-show="ethTransactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
-      <h3 class="title">发送ETH交易</h3>
-      <el-form-item label="Nonce：" prop="nonce">
-        <el-input type="text" placeholder="交易序列号" v-model="form.nonce" />
-      </el-form-item>
-      <el-form-item label="GasPrice：" prop="gasPrice">
-        <el-input type="text" placeholder="gas的费用" v-model="form.gasPrice" />
-      </el-form-item>
-      <el-form-item label="GasLimit：" prop="gasLimit">
-        <el-input type="text" placeholder="消耗gas的数量" v-model="form.gasLimit" />
-      </el-form-item>
-      <el-form-item label="To：" prop="to">
-        <el-input type="text" placeholder="转账地址" v-model="form.to" />
-      </el-form-item>
-      <el-form-item label="Value：" prop="value">
-        <el-input type="text" placeholder="转账金额" v-model="form.value" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="danger" v-on:click="signTransaction('form')">发 送</el-button>
-        <el-button v-on:click="showModel('other', false)">返 回</el-button>
-      </el-form-item>
-    </el-form>
-
-    <!--  TOKEN交易模态窗  -->
-    <el-form v-show="tokenTransactionModel" ref="form" :model="form" :rules="rules" label-width="80px" class="box">
-      <h3 class="title">发送ETH交易</h3>
-      <el-form-item label="Nonce：" prop="nonce">
-        <el-input type="text" placeholder="交易序列号" v-model="form.nonce" />
-      </el-form-item>
-      <el-form-item label="GasPrice：" prop="gasPrice">
-        <el-input type="text" placeholder="gas的费用" v-model="form.gasPrice" />
-      </el-form-item>
-      <el-form-item label="GasLimit：" prop="gasLimit">
-        <el-input type="text" placeholder="消耗gas的数量" v-model="form.gasLimit" />
-      </el-form-item>
-      <el-form-item label="To：" prop="to">
-        <el-input type="text" placeholder="转账地址" v-model="form.to" />
-      </el-form-item>
-      <el-form-item label="Value：" prop="value">
-        <el-input type="text" placeholder="转账金额" v-model="form.value" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="danger" v-on:click="signTransaction('form')">发 送</el-button>
-        <el-button v-on:click="showModel('other', false)">返 回</el-button>
+        <el-button type="danger" v-on:click="jump('transaction',wallet)">发送交易</el-button>
+        <el-button type="danger" v-on:click="jump('tokenTransaction',wallet)">发送Token交易</el-button>
+        <el-button v-on:click="jump('main')">退 出</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -80,7 +33,7 @@ export default {
       ethTransactionModel: false,
       tokenTransactionModel: false,
       balance: 0,
-      wallet: this.$route.params.wallet,
+      wallet: this.$route.params,
       activeWallet: {},
       web3: {},
       signedTransaction: '',
@@ -120,7 +73,6 @@ export default {
     refreshData () {
       this.getBalance()
       this.getTransactionCount()
-      this.getContractBalance()
     },
     // 获取账户余额
     getBalance () {
@@ -132,19 +84,6 @@ export default {
         this.balance = balance
       })
     },
-    async getContractBalance () {
-      const contract = myWallet.wallet.newContract('0x4dd42d34242be4d5009ccae04f5617e554a2d364')
-      const decimals = await contract.decimals()
-      console.log(decimals)
-      myWallet.wallet.getContractBalance(contract, this.activeWallet.address, (err, balance) => {
-        if (err) {
-          alert(err.message)
-          return
-        }
-        console.log(this.activeWallet.address)
-        console.log(balance)
-      })
-    },
     getTransactionCount () {
       myWallet.wallet.getTransactionCount(this.activeWallet, (err, transactionCount) => {
         if (err) {
@@ -153,49 +92,6 @@ export default {
         }
         this.form.nonce = transactionCount
       })
-    },
-    // 签名交易
-    signTransaction (formName) {
-      const {to, nonce, gasPrice, gasLimit, value} = this.form
-      const {utils} = this.web3
-      this.$refs[formName].validate(async (valid) => {
-        if (valid) {
-          const txParams = {
-            to: to,
-            chainId: 3,
-            value: utils.toHex(utils.toWei(value, 'ether')),
-            nonce: utils.toHex(nonce),
-            gasPrice: utils.toHex(utils.toWei(gasPrice, 'gwei')),
-            gasLimit: utils.toHex(gasLimit)
-          }
-          let valueTx = myWallet.tx.valueTx(txParams)
-          const privateKey = Buffer.from(
-            this.wallet.privateKey.slice(2),
-            'hex'
-          )
-          valueTx.sign(privateKey)
-          const signedTransaction = '0x' + valueTx.serialize().toString('hex')
-          this.sendTransaction(signedTransaction)
-        }
-      })
-    },
-    // 发送交易
-    sendTransaction (signedTransaction) {
-      this.web3.eth.sendSignedTransaction(signedTransaction, function (err, txId) {
-        if (err) {
-          console.warn(err.message)
-          return
-        }
-        this.isShow(false)
-        this.refreshData()
-        this.confirmedTransaction(txId, function (err, tx) {
-          if (err) {
-            console.warn(err.message)
-            return
-          }
-          console.log('Transaction confirmed', tx)
-        })
-      }.bind(this))
     },
     // 确认交易
     async confirmedTransaction (txId, callback) {
@@ -247,16 +143,9 @@ export default {
         console.warn(err.message)
       })
     },
-    // 交易模态窗
-    showModel (type, state) {
-      if (type === 'token') {
-        this.tokenTransactionModel = state
-      } else {
-        this.ethTransactionModel = state
-      }
-    },
-    jump (path) {
-      this.$router.push(path)
+    // 路由跳转
+    jump (path, params) {
+      this.$router.push({name: path, params})
     }
   }
 }

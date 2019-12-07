@@ -80,4 +80,8 @@ wallet.getTransactionCount = function (activeWallet, callback) {
   })
 }
 
+wallet.utils = function () {
+  return ethers.utils
+}
+
 module.exports = exports = wallet
