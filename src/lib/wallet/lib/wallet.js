@@ -34,22 +34,46 @@ wallet.getContractBalance = function (contract, address, callback) {
   })
 }
 
-wallet.generate = function (randomSeed, hdPath, callback) {
+// 使用随机数作为私钥创建钱包账号
+wallet.RandomNumberGeneration = function (callback) {
   try {
+    const privateKey = ethers.utils.randomBytes(32)
+    const wallet = new ethers.Wallet(privateKey)
+    console.log('账号地址: ' + wallet.address)
+    // 注意 ethers.utils.randomBytes 生成的是一个字节数组，
+    // 如果想用十六进制数显示出来表示，需要转化为 BigNumber 代码如下：
+    let randomNumber = ethers.utils.bigNumberify(privateKey)
+    console.log(randomNumber._hex)
+    callback(null, wallet)
+  } catch (err) {
+    callback(err, null)
+  }
+}
+
+// 通过助记词方式创建钱包账号
+wallet.randomSeedGenerate = function (randomSeed, hdPath, callback) {
+  try {
+    // 若传入的randomSeed不存在，则自动生成一个randomSeed
     if (!randomSeed || !util.validSeed(randomSeed)) {
       randomSeed = bip39.generateMnemonic()
     }
+    // 通过助记词转化为种子
     const seed = bip39.mnemonicToSeedSync(randomSeed)
+    // 使用BIP-0032或类似的方法生成确定性钱包
     hdPath = (util.validHdPath(hdPath)) ? hdPath : defaultHDPath
 
+    // 通过生成种子的进一步生成私钥
     const hdKey = HDKey.fromMasterSeed(seed)
+    // 利用hdPath导出子私钥
     const _hdKey = hdKey.derive(hdPath)
+    // 通过私钥导出keystore（生成一个keystore对象）
     util.fromHdKey(_hdKey, randomSeed, callback)
   } catch (err) {
     callback(err, null)
   }
 }
 
+// 获取以太账户余额
 wallet.getBalance = function (activeWallet, callback) {
   activeWallet.getBalance('pending').then(function (balance) {
     const formatBalance = ethers.utils.formatEther(balance, { commify: true })
@@ -59,6 +83,7 @@ wallet.getBalance = function (activeWallet, callback) {
   })
 }
 
+// 连接到network
 wallet.connect = function (wallet, network) {
   const defaultProvider = ethers.getDefaultProvider(network || 'ropsten')
   return wallet.connect(defaultProvider)
@@ -72,6 +97,7 @@ wallet.fromEncryptedJson = function (keystoreJson, password, callback) {
   })
 }
 
+// 获取TransactionCount
 wallet.getTransactionCount = function (activeWallet, callback) {
   activeWallet.getTransactionCount('pending').then(function (transactionCount) {
     callback(null, transactionCount)

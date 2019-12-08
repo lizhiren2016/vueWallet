@@ -3,10 +3,10 @@
     <h3 class="title">欢迎使用钱包</h3>
     <el-row>
       <el-col :span="24">
-        <el-button type="primary" v-on:click="jump('generate')">创建新的账户</el-button>
+        <el-button type="primary" v-on:click="jump('generate')">创建钱包</el-button>
       </el-col>
       <el-col :span="24">
-        <el-button type="warning" v-on:click="jump('import_wallet')">导入已有账户</el-button>
+        <el-button type="warning" v-on:click="jump('import_wallet')">导入钱包</el-button>
       </el-col>
     </el-row>
   </div>
@@ -37,7 +37,7 @@ export default {
 
   .title {
     text-align: center;
-    margin: 0 auto 40px auto;
+    margin: 0 auto 20px auto;
     color: #303133;
   }
 

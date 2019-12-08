@@ -1,6 +1,6 @@
-# wallet-web
+# vueWallet
 
-> wallet-web
+> A simple app using ethers、web3 and vuejs to generate ethereum wallet.
 
 ## Build Setup
 

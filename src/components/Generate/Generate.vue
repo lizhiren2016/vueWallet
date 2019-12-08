@@ -35,7 +35,7 @@
         <el-col :span="24">privateKey：{{privateKey}}</el-col>
         <el-col :span="24">randomSeed：{{generateMnemonicForm.randomSeed}}</el-col>
         <el-col :span="24" style="text-align: center;padding-top: 10px">
-          <el-button type="primary" v-on:click="jump('personal', wallet)">进入钱包</el-button>
+          <el-button type="primary" v-on:click="jump('personal', wallet.wallet)">进入钱包</el-button>
           <el-button type="success" v-on:click="jump('main')">返回首页</el-button>
           <el-button type="danger" >
             <a v-bind:download="fileName" v-bind:href="keystoreJsonDataLink" style="text-decoration:none;">下载</a>
@@ -123,7 +123,7 @@ export default {
           return
         }
       }
-      myWallet.wallet.generate(randomSeed, this.hdPathString, (err, data) => {
+      myWallet.wallet.randomSeedGenerate(randomSeed, this.hdPathString, (err, data) => {
         if (err) {
           this.disabled = false
           console.warn(err.message)
