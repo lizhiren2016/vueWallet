@@ -1,8 +1,8 @@
 {
   "name": "wallet-web",
   "version": "1.0.0",
-  "description": "wallet-web",
-  "author": "lizhiren",
+  "description": "A simple app generate ethereum wallet with vuejs",
+  "author": "LiZhiRen",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",

@@ -97,8 +97,10 @@ export default {
             this.wallet.privateKey.slice(2),
             'hex'
           )
+          // 用私钥对其签名
           valueTx.sign(privateKey)
           const signedTransaction = '0x' + valueTx.serialize().toString('hex')
+          // 发送（广播） 交易
           this.sendTransaction(signedTransaction)
         }
       })

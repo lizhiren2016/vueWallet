@@ -83,6 +83,15 @@ wallet.getBalance = function (activeWallet, callback) {
   })
 }
 
+// 获取TransactionCount
+wallet.getTransactionCount = function (activeWallet, callback) {
+  activeWallet.getTransactionCount('pending').then(function (transactionCount) {
+    callback(null, transactionCount)
+  }).catch(err => {
+    callback(err, null)
+  })
+}
+
 // 连接到network
 wallet.connect = function (wallet, network) {
   const defaultProvider = ethers.getDefaultProvider(network || 'ropsten')
@@ -93,15 +102,6 @@ wallet.fromEncryptedJson = function (keystoreJson, password, callback) {
   ethers.Wallet.fromEncryptedJson(keystoreJson, password).then(function (wallet) {
     callback(null, {wallet})
   }, function (err) {
-    callback(err, null)
-  })
-}
-
-// 获取TransactionCount
-wallet.getTransactionCount = function (activeWallet, callback) {
-  activeWallet.getTransactionCount('pending').then(function (transactionCount) {
-    callback(null, transactionCount)
-  }).catch(err => {
     callback(err, null)
   })
 }

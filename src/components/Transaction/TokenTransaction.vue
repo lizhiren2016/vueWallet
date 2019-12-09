@@ -21,7 +21,7 @@
         <el-input type="text" placeholder="转账金额" v-model="form.value" />
       </el-form-item>
       <el-form-item>
-        <el-button type="danger" v-on:click="signTransaction('form')">发 送</el-button>
+        <el-button type="danger" v-on:click="sendTransaction('form')">发 送</el-button>
         <el-button v-on:click="jump('personal',wallet)">返 回</el-button>
       </el-form-item>
     </el-form>
@@ -42,7 +42,6 @@ export default {
       web3: {},
       signedTransaction: '',
       form: {
-        gasPrice: '',
         gasLimit: 41000,
         nonce: '',
         value: '',
@@ -78,14 +77,13 @@ export default {
       const pattern = /0x[a-zA-Z0-9]{40}/
       if (pattern.test(contractAddress)) {
         this.disabledContractAddress = true
-        this.form.gasPrice = await this.getGasPrice()
-        this.newContract()
+        this.newContract(contractAddress)
         this.getContractBalance()
       }
     },
     // 创建合约
-    async newContract () {
-      this.contract = myWallet.wallet.newContract('0x4dd42d34242be4d5009ccae04f5617e554a2d364')
+    async newContract (contractAddress) {
+      this.contract = myWallet.wallet.newContract(contractAddress)
       this.form.decimals = await this.contract.decimals()
       this.form.symbol = await this.contract.symbol()
     },
@@ -99,15 +97,18 @@ export default {
         this.form.balance = balance
       })
     },
-    // 签名交易
-    signTransaction (formName) {
+    // 发送交易
+    sendTransaction (formName) {
       const {to, value, decimals, balance, gasLimit} = this.form
       this.$refs[formName].validate(async function (valid) {
         if (valid) {
+          // 验证码账户的余额是否能支持本次交易
           if ((value - balance) / `1e+${decimals}` > 0) {
             return alert('账户余额不足以本次交易！')
           }
+          // 获取最近几个历史区块 gas price 的中位数
           const gasPrice = await this.activeWallet.provider.getGasPrice()
+          // 连接一个activeWallet
           let contractWithSigner = this.contract.connect(this.activeWallet)
           contractWithSigner.transfer(to, value, {
             gasPrice: gasPrice,
@@ -119,21 +120,6 @@ export default {
           }.bind(this))
         }
       }.bind(this))
-    },
-    // 发送交易
-    sendTransaction (signedTransaction) {
-      this.web3.eth.sendSignedTransaction(signedTransaction, function (err, txId) {
-        if (err) {
-          console.warn(err.message)
-          return
-        }
-        this.jump('personal', this.wallet)
-      }.bind(this))
-    },
-    // 获取网络中的GasPrice
-    async getGasPrice () {
-      const gasPrice = await this.web3.eth.getGasPrice()
-      return gasPrice
     },
     jump (path, params) {
       this.$router.push({name: path, params})
